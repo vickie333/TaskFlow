@@ -17,4 +17,8 @@ class TaskViewModel: ViewModel() {
     ))
 
     val tasks: StateFlow<List<Task>> = _tasks
+
+    fun addTask(description: String) {
+        _tasks.value = _tasks.value + Task((_tasks.value.size + 1),description)
+    }
 }
