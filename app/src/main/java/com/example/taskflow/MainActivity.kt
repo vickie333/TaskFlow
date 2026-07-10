@@ -11,15 +11,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,20 +28,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val viewModel: TaskViewModel = viewModel()
+            val dao = AppDatabase.getInstance(applicationContext).taskDao()
+
+            val viewModel: TaskViewModel = viewModel(
+                factory = viewModelFactory {
+                    initializer {
+                        TaskViewModel(dao)
+                    }
+                }
+            )
 
             val tasks by viewModel.tasks.collectAsState()
             var text by rememberSaveable() { mutableStateOf("") }
 
-            Column(modifier = Modifier.fillMaxSize().padding(vertical = 16.dp),
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 16.dp),
                 verticalArrangement = Arrangement.Center) {
-                Row(modifier = Modifier.fillMaxWidth().padding(16.dp))
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp))
                 {
                     OutlinedTextField(text, onValueChange = {
                             userText -> text = userText
@@ -60,12 +71,19 @@ class MainActivity : ComponentActivity() {
                 }
 
                 LazyColumn(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    items(tasks) {
-                            Task ->
-                        TaskName(Task.description)
+                    items(tasks) { task ->
+                        Row() {
+                            TaskName(task.description)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Button(onClick = { viewModel.removeTask(task)}) {
+                                Text(text = "Eliminar tarea")
+                            }
+                        }
                     }
                 }
             }

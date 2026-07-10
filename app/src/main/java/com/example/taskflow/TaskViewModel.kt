@@ -1,24 +1,39 @@
 package com.example.taskflow
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
+@Entity(tableName = "tasks")
 data class Task(
-    val id: Number,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
     val description: String
 )
 
-class TaskViewModel: ViewModel() {
-    private val _tasks = MutableStateFlow(listOf(
-        Task(1,"tarea 1"),
-        Task(2,"tarea 2"),
-        Task(3,"tarea 3")
-    ))
-
-    val tasks: StateFlow<List<Task>> = _tasks
+class TaskViewModel(private val dao: TaskDao): ViewModel() {
+    val tasks: StateFlow<List<Task>> = dao.getAllTasks()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     fun addTask(description: String) {
-        _tasks.value = _tasks.value + Task((_tasks.value.size + 1),description)
+        viewModelScope.launch {
+            dao.insertTask(Task(0,description))
+        }
+    }
+
+    fun removeTask(task: Task) {
+        viewModelScope.launch {
+            dao.deleteTask(task)
+        }
     }
 }
