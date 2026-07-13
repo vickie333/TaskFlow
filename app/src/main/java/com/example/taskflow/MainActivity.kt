@@ -28,27 +28,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val dao = AppDatabase.getInstance(applicationContext).taskDao()
-
-            val viewModel: TaskViewModel = viewModel(
-                factory = viewModelFactory {
-                    initializer {
-                        TaskViewModel(dao)
-                    }
-                }
-            )
+            val viewModel: TaskViewModel = hiltViewModel()
 
             val navController = rememberNavController()
 
