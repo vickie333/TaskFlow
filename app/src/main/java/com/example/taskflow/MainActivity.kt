@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
 
             val navController = rememberNavController()
 
-            NavHost(navController = navController, startDestination = "lista") {
+            NavHost(navController = navController, startDestination = "login") {
                 composable("lista") {
                     TaskListScreen(
                         viewModel,
@@ -55,6 +55,11 @@ class MainActivity : ComponentActivity() {
                     backStackEntry ->
                     val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull() ?: 0
                     TaskDetailScreen(taskId, viewModel, onBack = { navController.popBackStack()})
+                }
+                composable("login") {
+                    LoginScreen(
+                        onLoginClick = { navController.navigate("lista")}
+                    )
                 }
             }
         }
