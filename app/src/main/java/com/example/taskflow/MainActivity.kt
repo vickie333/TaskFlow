@@ -40,25 +40,38 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val viewModel: TaskViewModel = hiltViewModel()
+            val viewModelTask: TaskViewModel = hiltViewModel()
+            val viewModelAuth: AuthViewModel = hiltViewModel()
+
+            val isLogged by viewModelAuth.isLogged.collectAsState()
 
             val navController = rememberNavController()
 
-            NavHost(navController = navController, startDestination = "login") {
+            NavHost(navController = navController, startDestination = if (isLogged) "lista" else "login") {
                 composable("lista") {
                     TaskListScreen(
-                        viewModel,
-                        onTaskClick = {task -> navController.navigate("detalle/${task.id}")}
+                        viewModelTask,
+                        viewModelAuth,
+                        onTaskClick = {task -> navController.navigate("detalle/${task.id}")},
+                        onLogout = { navController.navigate("login") {
+                            popUpTo("lista") {
+                                inclusive = true
+                            }
+                        } }
                     )
                 }
                 composable("detalle/{taskId}") {
                     backStackEntry ->
                     val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull() ?: 0
-                    TaskDetailScreen(taskId, viewModel, onBack = { navController.popBackStack()})
+                    TaskDetailScreen(taskId, viewModelTask, onBack = { navController.popBackStack()})
                 }
                 composable("login") {
                     LoginScreen(
-                        onLoginClick = { navController.navigate("lista")}
+                        onLoginClick = { navController.navigate("lista") {
+                            popUpTo("login") {
+                                inclusive = true
+                            }
+                        } }
                     )
                 }
             }
@@ -76,7 +89,7 @@ fun TaskName(name: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun TaskListScreen(viewModel: TaskViewModel, onTaskClick: (Task) -> Unit) {
+fun TaskListScreen(viewModel: TaskViewModel, viewModelAuth: AuthViewModel, onTaskClick: (Task) -> Unit, onLogout: () -> Unit) {
     val tasks by viewModel.tasks.collectAsState()
     var text by rememberSaveable() { mutableStateOf("") }
 
@@ -84,6 +97,13 @@ fun TaskListScreen(viewModel: TaskViewModel, onTaskClick: (Task) -> Unit) {
         .fillMaxSize()
         .padding(vertical = 16.dp),
         verticalArrangement = Arrangement.Center) {
+        Button(onClick = {
+            viewModelAuth.signOut()
+            onLogout()
+        }) {
+            Text("Salir")
+        }
+
         Row(modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp))

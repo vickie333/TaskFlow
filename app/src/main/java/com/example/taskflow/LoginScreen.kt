@@ -1,6 +1,5 @@
 package com.example.taskflow
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +31,12 @@ fun LoginScreen(viewModel: AuthViewModel = hiltViewModel(), onLoginClick: () -> 
     var email by rememberSaveable() { mutableStateOf("") }
     val msg by viewModel.msg.collectAsState()
     val isLogged by viewModel.isLogged.collectAsState()
+
+    LaunchedEffect(isLogged) {
+        if (isLogged) {
+            onLoginClick()
+        }
+    }
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -61,9 +67,6 @@ fun LoginScreen(viewModel: AuthViewModel = hiltViewModel(), onLoginClick: () -> 
 
         if (msg != null) {
             Text("$msg")
-        }
-        if (isLogged) {
-            onLoginClick()
         }
     }
 }
