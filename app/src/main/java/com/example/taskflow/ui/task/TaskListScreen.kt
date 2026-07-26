@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -68,10 +70,15 @@ fun TaskListScreen(viewModel: TaskViewModel, viewModelAuth: AuthViewModel, onTas
             items(tasks) { task ->
                 Row(modifier = Modifier.clickable {onTaskClick(task)}.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = task.isCompleted,
+                        onCheckedChange = { viewModel.toggleCompleted(task) }
+                    )
                     Text(
                         text = "Task: ${task.description}!",
                         fontSize = 20.sp,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Button(onClick = { viewModel.removeTask(task)}) {

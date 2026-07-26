@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "ada-lovelace": {
+      "source": "Ross-cripto/goza",
+      "sourceType": "github",
+      "skillPath": "skills/people/ada-lovelace/SKILL.md",
+      "computedHash": "281c4fb501fb5648ee096bb9ff7c386bb0c152ab019c6bbad8fa552bd4dbe4a4"
+    },
+    "goza": {
+      "source": "Ross-cripto/goza",
+      "sourceType": "github",
+      "skillPath": "goza/SKILL.md",
+      "computedHash": "6ea3418251a93cf6f0b33bcda36957d831fc8ffd935d8105a9736759b24cd82c"
+    },
+    "kirito": {
+      "source": "Ross-cripto/goza",
+      "sourceType": "github",
+      "skillPath": "skills/people/kirito/SKILL.md",
+      "computedHash": "dd0f551a8eef3358c671b2c7a0711db05ff7ca168a33f20441162f5b0d0ac512"
+    },
+    "peruano": {
+      "source": "Ross-cripto/goza",
+      "sourceType": "github",
+      "skillPath": "skills/nationalities/peruano/SKILL.md",
+      "computedHash": "fe51f70dd31150ed74b701a371649ec3f2991dcbf7c3495a8b90e0851efde963"
+    }
+  }
+}

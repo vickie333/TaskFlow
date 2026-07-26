@@ -37,4 +37,10 @@ class TaskViewModel @Inject constructor(private val dao: TaskDao): ViewModel() {
             dao.editTask(task)
         }
     }
+
+    fun toggleCompleted(task: Task) {
+        viewModelScope.launch {
+            dao.editTask(task.copy(isCompleted = !task.isCompleted))
+        }
+    }
 }
