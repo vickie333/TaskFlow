@@ -1,4 +1,4 @@
-package com.example.taskflow
+package com.example.taskflow.data
 
 import android.content.Context
 import androidx.room.Database

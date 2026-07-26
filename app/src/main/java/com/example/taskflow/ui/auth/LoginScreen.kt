@@ -1,4 +1,4 @@
-package com.example.taskflow
+package com.example.taskflow.ui.auth
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

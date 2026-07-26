@@ -1,6 +1,8 @@
-package com.example.taskflow
+package com.example.taskflow.di
 
 import android.content.Context
+import com.example.taskflow.data.AppDatabase
+import com.example.taskflow.data.TaskDao
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides

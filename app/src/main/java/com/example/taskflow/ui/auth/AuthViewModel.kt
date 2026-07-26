@@ -1,4 +1,4 @@
-package com.example.taskflow
+package com.example.taskflow.ui.auth
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

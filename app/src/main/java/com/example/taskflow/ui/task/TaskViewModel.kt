@@ -1,23 +1,15 @@
-package com.example.taskflow
+package com.example.taskflow.ui.task
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import com.example.taskflow.data.Task
+import com.example.taskflow.data.TaskDao
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-@Entity(tableName = "tasks")
-data class Task(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    val description: String
-)
 
 @HiltViewModel
 class TaskViewModel @Inject constructor(private val dao: TaskDao): ViewModel() {
@@ -37,6 +29,12 @@ class TaskViewModel @Inject constructor(private val dao: TaskDao): ViewModel() {
     fun removeTask(task: Task) {
         viewModelScope.launch {
             dao.deleteTask(task)
+        }
+    }
+
+    fun editTask(task: Task) {
+        viewModelScope.launch {
+            dao.editTask(task)
         }
     }
 }

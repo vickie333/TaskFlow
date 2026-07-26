@@ -4,6 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.example.taskflow.ui.auth.AuthViewModel
+import com.example.taskflow.ui.auth.LoginScreen
+import com.example.taskflow.ui.task.TaskDetailScreen
+import com.example.taskflow.ui.task.TaskEditScreen
+import com.example.taskflow.ui.task.TaskListScreen
+import com.example.taskflow.ui.task.TaskViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,6 +38,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.taskflow.ui.theme.TaskFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -47,113 +54,46 @@ class MainActivity : ComponentActivity() {
 
             val navController = rememberNavController()
 
-            NavHost(navController = navController, startDestination = if (isLogged) "lista" else "login") {
-                composable("lista") {
-                    TaskListScreen(
-                        viewModelTask,
-                        viewModelAuth,
-                        onTaskClick = {task -> navController.navigate("detalle/${task.id}")},
-                        onLogout = { navController.navigate("login") {
-                            popUpTo("lista") {
-                                inclusive = true
-                            }
-                        } }
-                    )
-                }
-                composable("detalle/{taskId}") {
-                    backStackEntry ->
-                    val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull() ?: 0
-                    TaskDetailScreen(taskId, viewModelTask, onBack = { navController.popBackStack()})
-                }
-                composable("login") {
-                    LoginScreen(
-                        onLoginClick = { navController.navigate("lista") {
-                            popUpTo("login") {
-                                inclusive = true
-                            }
-                        } }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun TaskName(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Task: $name!",
-        modifier = modifier,
-        fontSize = 35.sp
-    )
-}
-
-@Composable
-fun TaskListScreen(viewModel: TaskViewModel, viewModelAuth: AuthViewModel, onTaskClick: (Task) -> Unit, onLogout: () -> Unit) {
-    val tasks by viewModel.tasks.collectAsState()
-    var text by rememberSaveable() { mutableStateOf("") }
-
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(vertical = 16.dp),
-        verticalArrangement = Arrangement.Center) {
-        Button(onClick = {
-            viewModelAuth.signOut()
-            onLogout()
-        }) {
-            Text("Salir")
-        }
-
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp))
-        {
-            OutlinedTextField(text, onValueChange = {
-                    userText -> text = userText
-            },
-                modifier = Modifier.weight(1f))
-            Spacer(modifier = Modifier.width(16.dp))
-            Button(onClick = {
-                viewModel.addTask(text)
-                text = ""
-            }) {
-                Text("Add a task")
-            }
-        }
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            items(tasks) { task ->
-                Row(modifier = Modifier.clickable {onTaskClick(task)}) {
-                    TaskName(task.description)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Button(onClick = { viewModel.removeTask(task)}) {
-                        Text(text = "Eliminar tarea")
+            TaskFlowTheme() {
+                NavHost(navController = navController, startDestination = if (isLogged) "lista" else "login") {
+                    composable("lista") {
+                        TaskListScreen(
+                            viewModelTask,
+                            viewModelAuth,
+                            onTaskClick = {task -> navController.navigate("detalle/${task.id}")},
+                            onLogout = { navController.navigate("login") {
+                                popUpTo("lista") {
+                                    inclusive = true
+                                }
+                            } }
+                        )
+                    }
+                    composable("detalle/{taskId}") {
+                            backStackEntry ->
+                        val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull() ?: 0
+                        TaskDetailScreen(taskId,
+                            viewModelTask,
+                            onBack = { navController.popBackStack()},
+                            onEdit = { navController.navigate("edit/${taskId}")})
+                    }
+                    composable("edit/{taskId}") {
+                            backStackEntry ->
+                        val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull() ?: 0
+                        TaskEditScreen(taskId,
+                            viewModelTask,
+                            onBack = { navController.popBackStack()})
+                    }
+                    composable("login") {
+                        LoginScreen(
+                            onLoginClick = { navController.navigate("lista") {
+                                popUpTo("login") {
+                                    inclusive = true
+                                }
+                            } }
+                        )
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun TaskDetailScreen(taskId: Int?, viewModel: TaskViewModel, onBack: () -> Unit) {
-    val tasks = viewModel.tasks.collectAsState()
-    val task = tasks.value.find { it.id == taskId }
-
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        if (task != null) {
-            Text(text = "The description of the task ${task.id} is ${task.description}",
-                fontSize = 30.sp)
-        } else {
-            Text("No existe una tarea con ese id")
-        }
-        Button(onClick = onBack) {
-            Text("Volver")
         }
     }
 }
