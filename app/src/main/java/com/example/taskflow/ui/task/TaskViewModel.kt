@@ -2,6 +2,7 @@ package com.example.taskflow.ui.task
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.taskflow.data.Category
 import com.example.taskflow.data.Priority
 import com.example.taskflow.data.Task
 import com.example.taskflow.data.TaskDao
@@ -21,9 +22,9 @@ class TaskViewModel @Inject constructor(private val dao: TaskDao): ViewModel() {
             initialValue = emptyList()
         )
 
-    fun addTask(description: String, priority: Priority) {
+    fun addTask(description: String, priority: Priority, categoryId: Int?) {
         viewModelScope.launch {
-            dao.insertTask(Task(0,description, priority = priority))
+            dao.insertTask(Task(0,description, priority = priority, categoryId = categoryId))
         }
     }
 
