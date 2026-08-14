@@ -7,6 +7,7 @@ import com.example.taskflow.data.Priority
 import com.example.taskflow.data.Task
 import com.example.taskflow.data.TaskDao
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -22,6 +23,12 @@ class TaskViewModel @Inject constructor(private val dao: TaskDao): ViewModel() {
             initialValue = emptyList()
         )
 
+    private val _msgBusqueda = MutableStateFlow<String>("")
+    val msgBusqueda: StateFlow<String> = _msgBusqueda
+
+    fun userWrote(msg: String) {
+        _msgBusqueda.value = msg
+    }
     fun addTask(description: String, priority: Priority, categoryId: Int?) {
         viewModelScope.launch {
             dao.insertTask(Task(0,description, priority = priority, categoryId = categoryId))
