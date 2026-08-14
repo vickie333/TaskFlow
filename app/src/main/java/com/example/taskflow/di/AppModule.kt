@@ -2,6 +2,7 @@ package com.example.taskflow.di
 
 import android.content.Context
 import com.example.taskflow.data.AppDatabase
+import com.example.taskflow.data.CategoryDao
 import com.example.taskflow.data.TaskDao
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
@@ -29,5 +30,10 @@ object AppModule {
     @Provides
     fun provideFirebaseAuth(): FirebaseAuth {
         return FirebaseAuth.getInstance()
+    }
+
+    @Provides
+    fun provideCategoryDao(database: AppDatabase): CategoryDao {
+        return database.categoryDao()
     }
 }

@@ -38,6 +38,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.taskflow.ui.category.CategoryScreen
+import com.example.taskflow.ui.category.CategoryViewModel
 import com.example.taskflow.ui.theme.TaskFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -49,6 +51,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModelTask: TaskViewModel = hiltViewModel()
             val viewModelAuth: AuthViewModel = hiltViewModel()
+            val viewModelCategory: CategoryViewModel = hiltViewModel()
 
             val isLogged by viewModelAuth.isLogged.collectAsState()
 
@@ -60,12 +63,14 @@ class MainActivity : ComponentActivity() {
                         TaskListScreen(
                             viewModelTask,
                             viewModelAuth,
+                            viewModelCategory,
                             onTaskClick = {task -> navController.navigate("detalle/${task.id}")},
                             onLogout = { navController.navigate("login") {
                                 popUpTo("lista") {
                                     inclusive = true
                                 }
-                            } }
+                            } },
+                            onCategoryClick = { navController.navigate("categories") }
                         )
                     }
                     composable("detalle/{taskId}") {
@@ -73,6 +78,7 @@ class MainActivity : ComponentActivity() {
                         val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull() ?: 0
                         TaskDetailScreen(taskId,
                             viewModelTask,
+                            viewModelCategory,
                             onBack = { navController.popBackStack()},
                             onEdit = { navController.navigate("edit/${taskId}")})
                     }
@@ -81,6 +87,7 @@ class MainActivity : ComponentActivity() {
                         val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull() ?: 0
                         TaskEditScreen(taskId,
                             viewModelTask,
+                            viewModelCategory,
                             onBack = { navController.popBackStack()})
                     }
                     composable("login") {
@@ -90,6 +97,12 @@ class MainActivity : ComponentActivity() {
                                     inclusive = true
                                 }
                             } }
+                        )
+                    }
+                    composable("categories") {
+                        CategoryScreen(
+                            viewModelCategory,
+                            onBack = { navController.popBackStack() }
                         )
                     }
                 }

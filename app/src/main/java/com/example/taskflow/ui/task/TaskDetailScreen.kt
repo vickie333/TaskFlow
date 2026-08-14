@@ -8,19 +8,27 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.taskflow.ui.category.CategoryViewModel
 
 @Composable
-fun TaskDetailScreen(taskId: Int?, viewModel: TaskViewModel, onBack: () -> Unit, onEdit: () -> Unit) {
+fun TaskDetailScreen(taskId: Int?, viewModel: TaskViewModel, viewModelCategory: CategoryViewModel, onBack: () -> Unit, onEdit: () -> Unit) {
     val tasks = viewModel.tasks.collectAsState()
+    val categories by viewModelCategory.categories.collectAsState()
     val task = tasks.value.find { it.id == taskId }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         if (task != null) {
             Text(text = "The description of the task ${task.id} is ${task.description}",
                 fontSize = 30.sp)
+            Text(text = "Prioridad: ${task.priority.name}", fontSize = 20.sp)
+            Text(
+                text = "Categoría: ${categories.find { it.id == task.categoryId }?.name ?: "Sin categoría"}",
+                fontSize = 20.sp
+            )
         } else {
             Text("No existe una tarea con ese id")
         }
