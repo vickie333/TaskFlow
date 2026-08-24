@@ -57,12 +57,14 @@ fun TaskListScreen(
     val tasks by viewModel.tasks.collectAsState()
     val categories by viewModelCategory.categories.collectAsState()
     val busqueda by viewModel.msgBusqueda.collectAsState()
+    val categoryFilter by viewModel.categoryFilter.collectAsState()
 
     var text by rememberSaveable() { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var priority by remember { mutableStateOf(Priority.MEDIA) }
     var category by remember { mutableStateOf<Category?>(null) }
     var expandedCategory by remember { mutableStateOf(false) }
+    var expandedCategoryFilter by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -89,13 +91,45 @@ fun TaskListScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedTextField(
-                value = busqueda,
-                onValueChange = { userText -> viewModel.userWrote(userText) },
-                label = { Text("Buscar") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = busqueda,
+                    onValueChange = { userText -> viewModel.userFilterTask(userText) },
+                    label = { Text("Buscar") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f)
+                )
+                Box {
+                    OutlinedButton(onClick = { expandedCategoryFilter = true }) {
+                        Text(categories.find { it.id == categoryFilter }?.name ?: "Todas")
+                    }
+                    DropdownMenu(
+                        expanded = expandedCategoryFilter,
+                        onDismissRequest = { expandedCategoryFilter = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Todas") },
+                            onClick = {
+                                viewModel.userFilterCategory(null)
+                                expandedCategoryFilter = false
+                            }
+                        )
+                        categories.forEach { c ->
+                            DropdownMenuItem(
+                                text = { Text(c.name) },
+                                onClick = {
+                                    viewModel.userFilterCategory(c.id)
+                                    expandedCategoryFilter = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
