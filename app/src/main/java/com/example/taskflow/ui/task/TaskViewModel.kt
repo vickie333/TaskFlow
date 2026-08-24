@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.taskflow.data.Priority
 import com.example.taskflow.data.Task
 import com.example.taskflow.data.TaskDao
+import com.example.taskflow.data.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,13 +16,13 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class TaskViewModel @Inject constructor(private val dao: TaskDao): ViewModel() {
+class TaskViewModel @Inject constructor(private val taskRepository: TaskRepository): ViewModel() {
     private val _msgBusqueda = MutableStateFlow("")
     val msgBusqueda: StateFlow<String> = _msgBusqueda
 
     private val _categoryFilter = MutableStateFlow<Int?>(null)
     val categoryFilter: StateFlow<Int?> = _categoryFilter
-    val tasks: StateFlow<List<Task>> = combine(dao.getAllTasks(), _msgBusqueda, _categoryFilter) {
+    val tasks: StateFlow<List<Task>> = combine(taskRepository.getAllTasks(), _msgBusqueda, _categoryFilter) {
         lista, textoBusqueda, categoryBusqueda -> lista.filter { it.description.contains(textoBusqueda, ignoreCase = true) && ( categoryBusqueda == null || it.categoryId == categoryBusqueda) }
     }.stateIn(
             scope = viewModelScope,
@@ -37,25 +38,25 @@ class TaskViewModel @Inject constructor(private val dao: TaskDao): ViewModel() {
     }
     fun addTask(description: String, priority: Priority, categoryId: Int?) {
         viewModelScope.launch {
-            dao.insertTask(Task(0,description, priority = priority, categoryId = categoryId))
+            taskRepository.addTask(description, priority, categoryId)
         }
     }
 
     fun removeTask(task: Task) {
         viewModelScope.launch {
-            dao.deleteTask(task)
+            taskRepository.removeTask(task)
         }
     }
 
     fun editTask(task: Task) {
         viewModelScope.launch {
-            dao.editTask(task)
+            taskRepository.editTask(task)
         }
     }
 
     fun toggleCompleted(task: Task) {
         viewModelScope.launch {
-            dao.editTask(task.copy(isCompleted = !task.isCompleted))
+            taskRepository.toggleCompleted(task)
         }
     }
 }

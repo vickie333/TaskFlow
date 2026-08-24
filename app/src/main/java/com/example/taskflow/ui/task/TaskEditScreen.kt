@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.example.taskflow.ui.category.CategoryViewModel
 
 @Composable
-fun TaskEditScreen(taskId: Int?, viewModel: TaskViewModel, viewModelCategory: CategoryViewModel, onBack: () -> Unit) {
+fun TaskEditScreen(taskId: String, viewModel: TaskViewModel, viewModelCategory: CategoryViewModel, onBack: () -> Unit) {
     val tasks by viewModel.tasks.collectAsState()
     val categories by viewModelCategory.categories.collectAsState()
     val task = tasks.find { it.id == taskId }

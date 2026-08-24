@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.sp
 import com.example.taskflow.ui.category.CategoryViewModel
 
 @Composable
-fun TaskDetailScreen(taskId: Int?, viewModel: TaskViewModel, viewModelCategory: CategoryViewModel, onBack: () -> Unit, onEdit: () -> Unit) {
+fun TaskDetailScreen(taskId: String, viewModel: TaskViewModel, viewModelCategory: CategoryViewModel, onBack: () -> Unit, onEdit: () -> Unit) {
     val tasks = viewModel.tasks.collectAsState()
     val categories by viewModelCategory.categories.collectAsState()
     val task = tasks.value.find { it.id == taskId }
