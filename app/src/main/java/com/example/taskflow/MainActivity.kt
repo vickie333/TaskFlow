@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("detalle/{taskId}") {
                             backStackEntry ->
-                        val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull() ?: 0
+                        val taskId = backStackEntry.arguments?.getString("taskId") ?: ""
                         TaskDetailScreen(taskId,
                             viewModelTask,
                             viewModelCategory,
@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("edit/{taskId}") {
                             backStackEntry ->
-                        val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull() ?: 0
+                        val taskId = backStackEntry.arguments?.getString("taskId") ?: ""
                         TaskEditScreen(taskId,
                             viewModelTask,
                             viewModelCategory,
