@@ -5,6 +5,7 @@ import com.example.taskflow.data.AppDatabase
 import com.example.taskflow.data.CategoryDao
 import com.example.taskflow.data.TaskDao
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,6 +31,11 @@ object AppModule {
     @Provides
     fun provideFirebaseAuth(): FirebaseAuth {
         return FirebaseAuth.getInstance()
+    }
+
+    @Provides
+    fun provideFirebaseFirestore(): FirebaseFirestore {
+        return FirebaseFirestore.getInstance()
     }
 
     @Provides

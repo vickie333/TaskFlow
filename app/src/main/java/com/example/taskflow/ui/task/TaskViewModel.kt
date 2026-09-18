@@ -2,9 +2,9 @@ package com.example.taskflow.ui.task
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.util.Log
 import com.example.taskflow.data.Priority
 import com.example.taskflow.data.Task
-import com.example.taskflow.data.TaskDao
 import com.example.taskflow.data.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +35,16 @@ class TaskViewModel @Inject constructor(private val taskRepository: TaskReposito
     }
     fun userFilterTask(msg: String) {
         _msgBusqueda.value = msg
+    }
+
+    fun sync() {
+        viewModelScope.launch {
+            try {
+                taskRepository.pushPendingTasks()
+            } catch (e: Exception) {
+                Log.e("TaskSync", "Ocurrió un error al subir a Firestore ${e.message}")
+            }
+        }
     }
     fun addTask(description: String, priority: Priority, categoryId: Int?) {
         viewModelScope.launch {

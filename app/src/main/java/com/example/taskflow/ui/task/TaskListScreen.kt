@@ -74,6 +74,9 @@ fun TaskListScreen(
                     TextButton(onClick = onCategoryClick) {
                         Text("Categorías")
                     }
+                    TextButton({ viewModel.sync() }) {
+                        Text("Sincronizar")
+                    }
                     TextButton(onClick = {
                         viewModelAuth.signOut()
                         onLogout()
