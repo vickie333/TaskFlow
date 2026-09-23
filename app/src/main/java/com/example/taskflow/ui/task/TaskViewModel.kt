@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -40,9 +41,11 @@ class TaskViewModel @Inject constructor(private val taskRepository: TaskReposito
     fun sync() {
         viewModelScope.launch {
             try {
-                taskRepository.pushPendingTasks()
+                taskRepository.sync()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                Log.e("TaskSync", "Ocurrió un error al subir a Firestore ${e.message}")
+                Log.e("TaskSync", "Ocurrió un error al sincronizar con Firestore ${e.message}", e)
             }
         }
     }
