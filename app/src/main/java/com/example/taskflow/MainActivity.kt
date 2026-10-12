@@ -3,107 +3,89 @@ package com.example.taskflow
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import android.graphics.Color
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
-import com.example.taskflow.ui.auth.AuthViewModel
-import com.example.taskflow.ui.auth.LoginScreen
-import com.example.taskflow.ui.task.TaskDetailScreen
-import com.example.taskflow.ui.task.TaskEditScreen
-import com.example.taskflow.ui.task.TaskListScreen
-import com.example.taskflow.ui.task.TaskViewModel
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.key
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.taskflow.ui.auth.AuthViewModel
+import com.example.taskflow.ui.auth.LoginScreen
 import com.example.taskflow.ui.category.CategoryScreen
 import com.example.taskflow.ui.category.CategoryViewModel
+import com.example.taskflow.ui.settings.SettingsScreen
+import com.example.taskflow.ui.settings.SettingsViewModel
+import com.example.taskflow.ui.settings.ThemeChoice
+import com.example.taskflow.ui.task.TaskDetailScreen
+import com.example.taskflow.ui.task.TaskEditScreen
+import com.example.taskflow.ui.task.TaskListScreen
+import com.example.taskflow.ui.task.TaskViewModel
 import com.example.taskflow.ui.theme.TaskFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
+
+private val LIGHT_SCRIM = Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
+private val DARK_SCRIM = Color.argb(0x80, 0x1b, 0x1b, 0x1b)
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            val viewModelTask: TaskViewModel = hiltViewModel()
-            val viewModelAuth: AuthViewModel = hiltViewModel()
-            val viewModelCategory: CategoryViewModel = hiltViewModel()
-
-            val isLogged by viewModelAuth.isLogged.collectAsState()
-
-            val navController = rememberNavController()
-
-            TaskFlowTheme() {
-                NavHost(navController = navController, startDestination = if (isLogged) "lista" else "login") {
-                    composable("lista") {
-                        TaskListScreen(
-                            viewModelTask,
-                            viewModelAuth,
-                            viewModelCategory,
-                            onTaskClick = {task -> navController.navigate("detalle/${task.id}")},
-                            onLogout = { navController.navigate("login") {
-                                popUpTo("lista") {
-                                    inclusive = true
-                                }
-                            } },
-                            onCategoryClick = { navController.navigate("categories") }
-                        )
-                    }
-                    composable("detalle/{taskId}") {
-                            backStackEntry ->
-                        val taskId = backStackEntry.arguments?.getString("taskId") ?: ""
-                        TaskDetailScreen(taskId,
-                            viewModelTask,
-                            viewModelCategory,
-                            onBack = { navController.popBackStack()},
-                            onEdit = { navController.navigate("edit/${taskId}")})
-                    }
-                    composable("edit/{taskId}") {
-                            backStackEntry ->
-                        val taskId = backStackEntry.arguments?.getString("taskId") ?: ""
-                        TaskEditScreen(taskId,
-                            viewModelTask,
-                            viewModelCategory,
-                            onBack = { navController.popBackStack()})
-                    }
-                    composable("login") {
-                        LoginScreen(
-                            onLoginClick = { navController.navigate("lista") {
-                                popUpTo("login") {
-                                    inclusive = true
-                                }
-                            } }
-                        )
-                    }
-                    composable("categories") {
-                        CategoryScreen(
-                            viewModelCategory,
-                            onBack = { navController.popBackStack() }
-                        )
+            val auth: AuthViewModel = hiltViewModel()
+            val settings: SettingsViewModel = hiltViewModel()
+            val theme by settings.theme.collectAsState()
+            val uid by auth.uid.collectAsState()
+            val dark = when (theme) {
+                ThemeChoice.SYSTEM -> isSystemInDarkTheme()
+                ThemeChoice.LIGHT -> false
+                ThemeChoice.DARK -> true
+            }
+            // Bar icons must follow the in-app theme, not only the system one.
+            DisposableEffect(dark) {
+                enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { dark },
+                    navigationBarStyle = SystemBarStyle.auto(LIGHT_SCRIM, DARK_SCRIM) { dark }
+                )
+                onDispose {}
+            }
+            TaskFlowTheme(darkTheme = dark) {
+                // A new graph and saveable state scope prevents old account routes and drafts from returning.
+                key(uid) {
+                    val navController = rememberNavController()
+                    if (uid == null) {
+                        NavHost(navController, startDestination = "login") {
+                            composable("login") { LoginScreen(auth) }
+                        }
+                    } else {
+                        val tasks: TaskViewModel = hiltViewModel()
+                        val categories: CategoryViewModel = hiltViewModel()
+                        NavHost(navController, startDestination = "lista") {
+                            composable("lista") {
+                                TaskListScreen(
+                                    tasks, auth, categories,
+                                    onTaskClick = { navController.navigate("detalle/${it.id}") },
+                                    onCategoryClick = { navController.navigate("categories") },
+                                    onSettingsClick = { navController.navigate("settings") }
+                                )
+                            }
+                            composable("detalle/{taskId}") { entry ->
+                                TaskDetailScreen(entry.arguments?.getString("taskId").orEmpty(), tasks, categories,
+                                    onBack = { navController.popBackStack() },
+                                    onEdit = { navController.navigate("edit/${entry.arguments?.getString("taskId")}") })
+                            }
+                            composable("edit/{taskId}") { entry ->
+                                TaskEditScreen(entry.arguments?.getString("taskId").orEmpty(), tasks, categories,
+                                    onBack = { navController.popBackStack() })
+                            }
+                            composable("categories") { CategoryScreen(categories, onBack = { navController.popBackStack() }) }
+                            composable("settings") { SettingsScreen(settings, onBack = { navController.popBackStack() }) }
+                        }
                     }
                 }
             }

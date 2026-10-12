@@ -13,22 +13,6 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     suspend fun getTaskById(taskId: String): Task?
 
-    // Reading and applying must be atomic with respect to local edits.
-    @Transaction
-    suspend fun applyRemoteTask(remote: Task) {
-        val local = getTaskById(remote.id)
-        check(local == null || local.userId == remote.userId) {
-            "El identificador de tarea pertenece a otra cuenta"
-        }
-        if (local == null) {
-            insertTask(remote.copy(categoryId = null, isSynced = true))
-        } else if (remote.updatedAt >= local.updatedAt) {
-            // Categories are still device-local; never import a foreign category ID.
-            // Keep tombstones to avoid resurrecting tasks from older remote data.
-            editTask(remote.copy(categoryId = local.categoryId, isSynced = true))
-        }
-    }
-
     @Query(
         """
         SELECT * FROM tasks 
@@ -56,6 +40,15 @@ interface TaskDao {
         taskId: String,
         uploadedAt: Long
     ): Int
+
+    @Query("SELECT * FROM tasks WHERE userId = :uid")
+    suspend fun getTasks(uid: String): List<Task>
+
+    @Query("SELECT * FROM tasks WHERE userId = 'USER' OR TRIM(userId) = ''")
+    suspend fun getLegacyTasks(): List<Task>
+
+    @Query("SELECT COUNT(*) FROM tasks WHERE categoryId = :id AND pendingDelete = 0")
+    suspend fun activeCategoryTasks(id: String): Int
 
     @Insert
     suspend fun insertTask(task: Task)

@@ -24,11 +24,11 @@ class FirestoreTaskRemoteStore @Inject constructor(
         return firestore.runTransaction { transaction ->
             val snapshot = transaction.get(document)
             val remote = if (snapshot.exists()) {
-                requireNotNull(snapshot.toObject(TaskDto::class.java))
+                snapshot.readTask()
             } else null
             val winner = chooseTaskVersion(local, remote)
             if (remote == null || local.updatedAt > remote.updatedAt) {
-                transaction.set(document, winner)
+                transaction.set(document, mapOf("description" to winner.description, "isCompleted" to winner.isCompleted, "priority" to winner.priority, "updatedAt" to winner.updatedAt, "categoryId" to winner.categoryId, "pendingDelete" to winner.pendingDelete))
             }
             winner
         }.await()
@@ -36,6 +36,15 @@ class FirestoreTaskRemoteStore @Inject constructor(
 
     override suspend fun fetchAll(uid: String): Map<String, TaskDto> =
         tasks(uid).get(Source.SERVER).await().documents.associate { document ->
-            document.id to requireNotNull(document.toObject(TaskDto::class.java))
+            document.id to document.readTask()
         }
 }
+
+private fun com.google.firebase.firestore.DocumentSnapshot.readTask() = TaskDto(
+    description = getString("description") ?: "",
+    isCompleted = getBoolean("isCompleted") ?: getBoolean("completed") ?: false,
+    priority = getString("priority") ?: "MEDIA",
+    updatedAt = getLong("updatedAt") ?: 0,
+    categoryId = getString("categoryId"),
+    pendingDelete = getBoolean("pendingDelete") ?: false
+)

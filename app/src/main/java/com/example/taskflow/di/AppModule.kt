@@ -19,6 +19,12 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
     @Provides
+    fun provideSession(session: com.example.taskflow.data.FirebaseAccountSession): com.example.taskflow.data.AccountSession = session
+
+    @Provides
+    fun provideCategoryRemoteStore(store: com.example.taskflow.data.remote.FirestoreCategoryRemoteStore): com.example.taskflow.data.remote.CategoryRemoteStore = store
+
+    @Provides
     fun provideTaskRemoteStore(store: FirestoreTaskRemoteStore): TaskRemoteStore = store
 
     @Provides

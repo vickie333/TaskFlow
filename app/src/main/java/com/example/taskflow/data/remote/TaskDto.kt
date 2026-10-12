@@ -8,13 +8,14 @@ data class TaskDto(
     val isCompleted: Boolean = false,
     val priority: String = Priority.MEDIA.toString(),
     val updatedAt: Long = 0L,
+    val categoryId: String? = null,
     val pendingDelete: Boolean = false
 )
 
 fun TaskDto.toTask(
     id: String,
     userId: String,
-    categoryId: Int?)
+    categoryId: String? = this.categoryId)
 = Task(
     id = id,
     userId = userId,
@@ -32,5 +33,6 @@ fun Task.toDto() = TaskDto(
     isCompleted = isCompleted,
     priority = priority.name,
     updatedAt = updatedAt,
+    categoryId = categoryId,
     pendingDelete = pendingDelete
 )
