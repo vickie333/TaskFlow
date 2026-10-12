@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owns(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Documents live under their owner's uid. Never allow collection-wide access.
+    // Deletions are tombstones so an offline device can learn about them later.
+    match /users/{userId}/tasks/{taskId} {
+      allow read: if owns(userId);
+      allow create, update: if owns(userId)
+        && request.resource.data.description is string
+        && (('isCompleted' in request.resource.data && request.resource.data.isCompleted is bool)
+          || ('completed' in request.resource.data && request.resource.data.completed is bool))
+        && request.resource.data.priority in ['ALTA', 'MEDIA', 'BAJA']
+        && request.resource.data.updatedAt is int
+        && request.resource.data.pendingDelete is bool
+        && (!('categoryId' in request.resource.data)
+          || request.resource.data.categoryId == null
+          || (request.resource.data.categoryId is string
+            && exists(/databases/$(database)/documents/users/$(userId)/categories/$(request.resource.data.categoryId))));
+      allow delete: if false;
+    }
+
+    match /users/{userId}/categories/{categoryId} {
+      allow read: if owns(userId);
+      allow create, update: if owns(userId)
+        && request.resource.data.name is string
+        && request.resource.data.updatedAt is int
+        && request.resource.data.pendingDelete is bool;
+      allow delete: if false;
+    }
+  }
+}

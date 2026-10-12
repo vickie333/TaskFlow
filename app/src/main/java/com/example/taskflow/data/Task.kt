@@ -15,7 +15,7 @@ data class Task(
     val description: String,
     val isCompleted: Boolean = false,
     val priority: Priority = Priority.MEDIA,
-    val categoryId: Int? = null,
+    val categoryId: String? = null,
     val userId: String,
     val updatedAt: Long = System.currentTimeMillis(),
     val isSynced: Boolean = false,

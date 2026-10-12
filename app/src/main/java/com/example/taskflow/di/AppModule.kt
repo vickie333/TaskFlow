@@ -4,7 +4,10 @@ import android.content.Context
 import com.example.taskflow.data.AppDatabase
 import com.example.taskflow.data.CategoryDao
 import com.example.taskflow.data.TaskDao
+import com.example.taskflow.data.remote.TaskRemoteStore
+import com.example.taskflow.data.remote.FirestoreTaskRemoteStore
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,6 +18,14 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+    @Provides
+    fun provideSession(session: com.example.taskflow.data.FirebaseAccountSession): com.example.taskflow.data.AccountSession = session
+
+    @Provides
+    fun provideCategoryRemoteStore(store: com.example.taskflow.data.remote.FirestoreCategoryRemoteStore): com.example.taskflow.data.remote.CategoryRemoteStore = store
+
+    @Provides
+    fun provideTaskRemoteStore(store: FirestoreTaskRemoteStore): TaskRemoteStore = store
 
     @Provides
     @Singleton
@@ -30,6 +41,11 @@ object AppModule {
     @Provides
     fun provideFirebaseAuth(): FirebaseAuth {
         return FirebaseAuth.getInstance()
+    }
+
+    @Provides
+    fun provideFirebaseFirestore(): FirebaseFirestore {
+        return FirebaseFirestore.getInstance()
     }
 
     @Provides
