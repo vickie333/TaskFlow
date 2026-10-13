@@ -42,6 +42,43 @@ class MigrationTest {
                 assertFalse(task.isSynced)
             }
             assertTrue(room.categoryDao().getCategories("USER").any { it.name == "Unowned" })
+            assertNoForeignKeyViolations(room.openHelper.writableDatabase)
         } finally { room.close(); context.deleteDatabase(name) }
+    }
+
+    @Test fun v5MigrationPreservesAllColumnsAndKeepsForeignKeysValid() = runBlocking {
+        val context = RuntimeEnvironment.getApplication()
+        val name = "migration-${java.util.UUID.randomUUID()}"
+        val helper = FrameworkSQLiteOpenHelperFactory().create(SupportSQLiteOpenHelper.Configuration.builder(context).name(name).callback(object : SupportSQLiteOpenHelper.Callback(5) {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE categories (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT NOT NULL)")
+                db.execSQL("CREATE TABLE tasks (id TEXT PRIMARY KEY NOT NULL, description TEXT NOT NULL, isCompleted INTEGER NOT NULL DEFAULT 0, priority TEXT NOT NULL DEFAULT 'MEDIA', categoryId INTEGER REFERENCES categories(id) ON DELETE RESTRICT, userId TEXT NOT NULL DEFAULT 'USER', updatedAt INTEGER NOT NULL, isSynced INTEGER NOT NULL DEFAULT 0, pendingDelete INTEGER NOT NULL DEFAULT 0)")
+                db.execSQL("CREATE INDEX index_tasks_categoryId ON tasks(categoryId)")
+                db.execSQL("INSERT INTO categories VALUES (1, 'Work')")
+                db.execSQL("INSERT INTO tasks VALUES ('done', 'Hecha', 1, 'BAJA', 1, 'alice', 50, 1, 0)")
+                db.execSQL("INSERT INTO tasks VALUES ('free', 'Sin categoria', 0, 'ALTA', NULL, 'alice', 60, 0, 1)")
+            }
+            override fun onUpgrade(db: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+        }).build())
+        helper.writableDatabase
+        helper.close()
+        val room = Room.databaseBuilder(context, AppDatabase::class.java, name).addMigrations(AppDatabase.MIGRATION_5_6).allowMainThreadQueries().build()
+        try {
+            val db = room.openHelper.writableDatabase
+            val done = requireNotNull(room.taskDao().getTaskById("done"))
+            assertTrue(done.isCompleted)
+            assertEquals(Priority.BAJA, done.priority)
+            assertNotNull(done.categoryId)
+            assertEquals("Work", room.categoryDao().getCategoryById(requireNotNull(done.categoryId))?.name)
+            val free = requireNotNull(room.taskDao().getTaskById("free"))
+            assertNull(free.categoryId)
+            assertEquals(Priority.ALTA, free.priority)
+            assertTrue(free.pendingDelete)
+            assertNoForeignKeyViolations(db)
+        } finally { room.close(); context.deleteDatabase(name) }
+    }
+
+    private fun assertNoForeignKeyViolations(db: SupportSQLiteDatabase) {
+        db.query("PRAGMA foreign_key_check").use { assertEquals("foreign_key_check devolvio filas", 0, it.count) }
     }
 }
