@@ -12,7 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,9 +21,9 @@ import com.example.taskflow.ui.category.CategoryViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskDetailScreen(taskId: String, viewModel: TaskViewModel, viewModelCategory: CategoryViewModel, onBack: () -> Unit, onEdit: () -> Unit) {
-    val uid by viewModel.accountUid.collectAsState()
-    val tasks by viewModel.allTasks.collectAsState()
-    val allCategories by viewModelCategory.categories.collectAsState()
+    val uid by viewModel.accountUid.collectAsStateWithLifecycle()
+    val tasks by viewModel.allTasks.collectAsStateWithLifecycle()
+    val allCategories by viewModelCategory.categories.collectAsStateWithLifecycle()
     val task = tasks.find { it.id == taskId && it.userId == uid }
     val categories = allCategories.filter { it.userId == uid }
     Scaffold(topBar = { TopAppBar(title = { Text("Detalle de tarea") }, navigationIcon = { TextButton(onClick = onBack) { Text("Volver") } }) }) { padding ->

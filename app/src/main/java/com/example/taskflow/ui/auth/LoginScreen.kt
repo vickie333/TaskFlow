@@ -14,7 +14,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 fun LoginScreen(viewModel: AuthViewModel) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val message by viewModel.msg.collectAsState()
+    val message by viewModel.msg.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp), verticalArrangement = Arrangement.Center) {
         Text("TaskFlow", style = MaterialTheme.typography.headlineLarge)
         Spacer(Modifier.height(24.dp))

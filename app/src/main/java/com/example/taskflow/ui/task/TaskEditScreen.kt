@@ -18,7 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,13 +32,13 @@ import com.example.taskflow.ui.category.CategoryViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskEditScreen(taskId: String, viewModel: TaskViewModel, viewModelCategory: CategoryViewModel, onBack: () -> Unit) {
-    val uid by viewModel.accountUid.collectAsState()
-    val tasks by viewModel.allTasks.collectAsState()
-    val allCategories by viewModelCategory.categories.collectAsState()
+    val uid by viewModel.accountUid.collectAsStateWithLifecycle()
+    val tasks by viewModel.allTasks.collectAsStateWithLifecycle()
+    val allCategories by viewModelCategory.categories.collectAsStateWithLifecycle()
     val categories = allCategories.filter { it.userId == uid }
     val task = tasks.find { it.id == taskId && it.userId == uid }
-    val error by viewModel.message.collectAsState()
-    val busy by viewModel.busy.collectAsState()
+    val error by viewModel.message.collectAsStateWithLifecycle()
+    val busy by viewModel.busy.collectAsStateWithLifecycle()
     var description by rememberSaveable(taskId, uid) { mutableStateOf<String?>(null) }
     var categoryId by rememberSaveable(taskId, uid) { mutableStateOf<String?>(null) }
     var priority by rememberSaveable(taskId, uid) { mutableStateOf<Priority?>(null) }

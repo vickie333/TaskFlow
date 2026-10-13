@@ -17,7 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,11 +30,11 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryScreen(viewModel: CategoryViewModel, onBack: () -> Unit) {
-    val uid by viewModel.accountUid.collectAsState()
-    val allCategories by viewModel.categories.collectAsState()
+    val uid by viewModel.accountUid.collectAsStateWithLifecycle()
+    val allCategories by viewModel.categories.collectAsStateWithLifecycle()
     val categories = allCategories.filter { it.userId == uid }
-    val msg by viewModel.msg.collectAsState()
-    val busy by viewModel.busy.collectAsState()
+    val msg by viewModel.msg.collectAsStateWithLifecycle()
+    val busy by viewModel.busy.collectAsStateWithLifecycle()
     var name by rememberSaveable(uid) { mutableStateOf("") }
     Scaffold(topBar = { TopAppBar(title = { Text("Categorías") }, navigationIcon = { TextButton(onClick = onBack) { Text("Volver") } }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {

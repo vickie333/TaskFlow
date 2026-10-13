@@ -25,7 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,15 +51,15 @@ fun TaskListScreen(
     onCategoryClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
-    val uid by viewModelAuth.uid.collectAsState()
-    val allTasks by viewModel.tasks.collectAsState()
-    val allCategories by viewModelCategory.categories.collectAsState()
+    val uid by viewModelAuth.uid.collectAsStateWithLifecycle()
+    val allTasks by viewModel.tasks.collectAsStateWithLifecycle()
+    val allCategories by viewModelCategory.categories.collectAsStateWithLifecycle()
     val categories = allCategories.filter { it.userId == uid }
     val tasks = allTasks.filter { it.userId == uid }
-    val query by viewModel.msgBusqueda.collectAsState()
-    val categoryFilter by viewModel.categoryFilter.collectAsState()
-    val error by viewModel.message.collectAsState()
-    val busy by viewModel.busy.collectAsState()
+    val query by viewModel.msgBusqueda.collectAsStateWithLifecycle()
+    val categoryFilter by viewModel.categoryFilter.collectAsStateWithLifecycle()
+    val error by viewModel.message.collectAsStateWithLifecycle()
+    val busy by viewModel.busy.collectAsStateWithLifecycle()
     var text by rememberSaveable { mutableStateOf("") }
     var priority by rememberSaveable { mutableStateOf(Priority.MEDIA) }
     var categoryId by rememberSaveable { mutableStateOf<String?>(null) }

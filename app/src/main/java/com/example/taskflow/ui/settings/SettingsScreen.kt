@@ -18,7 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,12 +31,12 @@ import com.example.taskflow.data.sync.SyncStatus
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
-    val theme by viewModel.theme.collectAsState()
-    val uid by viewModel.accountUid.collectAsState()
-    val syncState by viewModel.syncStatus.collectAsState()
+    val theme by viewModel.theme.collectAsStateWithLifecycle()
+    val uid by viewModel.accountUid.collectAsStateWithLifecycle()
+    val syncState by viewModel.syncStatus.collectAsStateWithLifecycle()
     val status = if (syncState.first == uid) syncState.second else SyncStatus()
-    val message by viewModel.message.collectAsState()
-    val recovering by viewModel.recovering.collectAsState()
+    val message by viewModel.message.collectAsStateWithLifecycle()
+    val recovering by viewModel.recovering.collectAsStateWithLifecycle()
     var confirmRecovery by remember { mutableStateOf(false) }
 
     Scaffold(topBar = { TopAppBar(title = { Text("Ajustes") }, navigationIcon = { TextButton(onClick = onBack) { Text("Volver") } }) }) { padding ->
