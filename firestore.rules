@@ -17,7 +17,9 @@ service cloud.firestore {
     match /users/{userId}/tasks/{taskId} {
       allow read: if owns(userId);
       allow create, update: if owns(userId)
+        && request.resource.data.keys().hasOnly(['description', 'isCompleted', 'completed', 'priority', 'updatedAt', 'categoryId', 'pendingDelete'])
         && request.resource.data.description is string
+        && request.resource.data.description.size() <= 500
         && (('isCompleted' in request.resource.data && request.resource.data.isCompleted is bool)
           || ('completed' in request.resource.data && request.resource.data.completed is bool))
         && request.resource.data.priority in ['ALTA', 'MEDIA', 'BAJA']
@@ -26,6 +28,7 @@ service cloud.firestore {
         && (!('categoryId' in request.resource.data)
           || request.resource.data.categoryId == null
           || (request.resource.data.categoryId is string
+            && request.resource.data.categoryId.size() <= 64
             && exists(/databases/$(database)/documents/users/$(userId)/categories/$(request.resource.data.categoryId))));
       allow delete: if owns(userId) && expiredTombstone();
     }
@@ -33,7 +36,9 @@ service cloud.firestore {
     match /users/{userId}/categories/{categoryId} {
       allow read: if owns(userId);
       allow create, update: if owns(userId)
+        && request.resource.data.keys().hasOnly(['name', 'updatedAt', 'pendingDelete'])
         && request.resource.data.name is string
+        && request.resource.data.name.size() <= 100
         && request.resource.data.updatedAt is int
         && request.resource.data.pendingDelete is bool;
       allow delete: if owns(userId) && expiredTombstone();

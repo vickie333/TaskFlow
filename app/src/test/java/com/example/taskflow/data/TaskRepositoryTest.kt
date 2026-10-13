@@ -48,3 +48,33 @@ class TaskRepositoryTest {
         assertTrue(requireNotNull(db.taskDao().getTaskById("t")).pendingDelete)
     }
 }
+
+@org.junit.runner.RunWith(org.robolectric.RobolectricTestRunner::class)
+@org.robolectric.annotation.Config(sdk = [35])
+class SizeLimitsTest {
+    private val db = androidx.room.Room.inMemoryDatabaseBuilder(org.robolectric.RuntimeEnvironment.getApplication(), AppDatabase::class.java).allowMainThreadQueries().build()
+    private val session = TestSession()
+    private val scheduler = object : SyncScheduler { override fun requestSync(uid: String) = Unit }
+    private val tasks = TaskRepository(db, session, scheduler, TaskSynchronizer(db, MemoryRemoteStore(), MemoryCategoryStore(), session))
+    private val categories = CategoryRepository(db, session, scheduler)
+    @org.junit.After fun close() { db.close() }
+
+    @Test fun descriptionAtTheLimitIsAcceptedAndOneOverIsRejected() = runBlocking {
+        tasks.addTask("a".repeat(MAX_DESCRIPTION_LENGTH), Priority.MEDIA, null)
+        assertThrows(IllegalArgumentException::class.java) { runBlocking { tasks.addTask("a".repeat(MAX_DESCRIPTION_LENGTH + 1), Priority.MEDIA, null) } }
+        assertEquals(1, db.taskDao().getTasks("alice").size)
+        Unit
+    }
+
+    @Test fun limitIgnoresSurroundingWhitespace() = runBlocking {
+        tasks.addTask("  " + "a".repeat(MAX_DESCRIPTION_LENGTH) + "  ", Priority.MEDIA, null)
+        assertEquals(1, db.taskDao().getTasks("alice").size)
+    }
+
+    @Test fun categoryNameLimitIsEnforced() = runBlocking {
+        categories.addCategory("n".repeat(MAX_CATEGORY_NAME_LENGTH))
+        assertThrows(IllegalArgumentException::class.java) { runBlocking { categories.addCategory("n".repeat(MAX_CATEGORY_NAME_LENGTH + 1)) } }
+        assertEquals(1, db.categoryDao().getCategories("alice").size)
+        Unit
+    }
+}
