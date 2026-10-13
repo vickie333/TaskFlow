@@ -26,10 +26,12 @@ class CategoryViewModel @Inject constructor(
     private val session: AccountSession
 ) : ViewModel() {
     val accountUid: StateFlow<String?> = session.uid
+    // Lazily, not WhileSubscribed(5000): the upstream must keep following the account even when no screen is
+    // collecting, otherwise the cache keeps the previous account's list until someone subscribes again.
     val categories: StateFlow<List<Category>> = session.uid.flatMapLatest { uid ->
         if (uid.isNullOrBlank()) flowOf(emptyList())
         else repository.getAllCategories().onStart { emit(emptyList()) }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val _msg = MutableStateFlow<String?>(null)
     val msg: StateFlow<String?> = _msg

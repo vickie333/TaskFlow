@@ -42,13 +42,15 @@ class TaskViewModel @Inject constructor(
     private val _loading = MutableStateFlow(true)
     val loading: StateFlow<Boolean> = _loading
 
+    // Lazily, not WhileSubscribed(5000): the upstream must keep following the account even when no screen is
+    // collecting, otherwise the cache keeps the previous account's list until someone subscribes again.
     val allTasks: StateFlow<List<Task>> = session.uid.flatMapLatest { uid ->
         if (uid.isNullOrBlank()) flowOf(emptyList<Task>()).onStart { _loading.value = false }
         else repository.getAllTasks().onEach { _loading.value = false }.onStart { _loading.value = true; emit(emptyList()) }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val tasks: StateFlow<List<Task>> = combine(session.uid, allTasks, search, filter) { uid, all, query, category ->
         all.filter { it.userId == uid && it.description.contains(query, ignoreCase = true) && (category == null || it.categoryId == category) }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     init {
         viewModelScope.launch {
