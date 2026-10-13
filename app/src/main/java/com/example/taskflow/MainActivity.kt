@@ -8,7 +8,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -39,8 +39,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             val auth: AuthViewModel = hiltViewModel()
             val settings: SettingsViewModel = hiltViewModel()
-            val theme by settings.theme.collectAsState()
-            val uid by auth.uid.collectAsState()
+            val theme by settings.theme.collectAsStateWithLifecycle()
+            val uid by auth.uid.collectAsStateWithLifecycle()
             val dark = when (theme) {
                 ThemeChoice.SYSTEM -> isSystemInDarkTheme()
                 ThemeChoice.LIGHT -> false

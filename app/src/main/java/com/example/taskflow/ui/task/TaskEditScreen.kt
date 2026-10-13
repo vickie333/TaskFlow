@@ -1,5 +1,7 @@
 package com.example.taskflow.ui.task
 
+import androidx.compose.ui.res.stringResource
+import com.example.taskflow.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,13 +34,13 @@ import com.example.taskflow.ui.category.CategoryViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskEditScreen(taskId: String, viewModel: TaskViewModel, viewModelCategory: CategoryViewModel, onBack: () -> Unit) {
-    val uid by viewModel.accountUid.collectAsState()
-    val tasks by viewModel.allTasks.collectAsState()
-    val allCategories by viewModelCategory.categories.collectAsState()
+    val uid by viewModel.accountUid.collectAsStateWithLifecycle()
+    val tasks by viewModel.allTasks.collectAsStateWithLifecycle()
+    val allCategories by viewModelCategory.categories.collectAsStateWithLifecycle()
     val categories = allCategories.filter { it.userId == uid }
     val task = tasks.find { it.id == taskId && it.userId == uid }
-    val error by viewModel.message.collectAsState()
-    val busy by viewModel.busy.collectAsState()
+    val error by viewModel.message.collectAsStateWithLifecycle()
+    val busy by viewModel.busy.collectAsStateWithLifecycle()
     var description by rememberSaveable(taskId, uid) { mutableStateOf<String?>(null) }
     var categoryId by rememberSaveable(taskId, uid) { mutableStateOf<String?>(null) }
     var priority by rememberSaveable(taskId, uid) { mutableStateOf<Priority?>(null) }
@@ -48,19 +50,19 @@ fun TaskEditScreen(taskId: String, viewModel: TaskViewModel, viewModelCategory: 
     val currentCategory = categoryId ?: task?.categoryId?.takeIf { id -> categories.any { it.id == id } }
     val currentPriority = priority ?: task?.priority ?: Priority.MEDIA
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Editar tarea") }, navigationIcon = { TextButton(onClick = onBack) { Text("Volver") } }) }) { padding ->
+    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.edit_task)) }, navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(R.string.action_back)) } }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (task == null) Text("No se encontró la tarea") else {
-                OutlinedTextField(currentDescription, { description = it }, label = { Text("Descripción") }, modifier = Modifier.fillMaxWidth())
+            if (task == null) Text(stringResource(R.string.task_not_found)) else {
+                OutlinedTextField(currentDescription, { description = it }, label = { Text(stringResource(R.string.description)) }, modifier = Modifier.fillMaxWidth())
                 Box {
-                    OutlinedButton(onClick = { categoryExpanded = true }) { Text(categories.find { it.id == currentCategory }?.name ?: "Sin categoría") }
+                    OutlinedButton(onClick = { categoryExpanded = true }) { Text(categories.find { it.id == currentCategory }?.name ?: stringResource(R.string.no_category)) }
                     DropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {
-                        DropdownMenuItem(text = { Text("Sin categoría") }, onClick = { categoryId = ""; categoryExpanded = false })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.no_category)) }, onClick = { categoryId = ""; categoryExpanded = false })
                         categories.forEach { item -> DropdownMenuItem(text = { Text(item.name) }, onClick = { categoryId = item.id; categoryExpanded = false }) }
                     }
                 }
                 Box {
-                    OutlinedButton(onClick = { priorityExpanded = true }) { Text("Prioridad: ${currentPriority.name}") }
+                    OutlinedButton(onClick = { priorityExpanded = true }) { Text(stringResource(R.string.priority_value, currentPriority.name)) }
                     DropdownMenu(expanded = priorityExpanded, onDismissRequest = { priorityExpanded = false }) {
                         Priority.entries.forEach { item -> DropdownMenuItem(text = { Text(item.name) }, onClick = { priority = item; priorityExpanded = false }) }
                     }
@@ -68,7 +70,7 @@ fun TaskEditScreen(taskId: String, viewModel: TaskViewModel, viewModelCategory: 
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 Button(enabled = currentDescription.isNotBlank() && !busy, onClick = {
                     viewModel.editTask(task.copy(description = currentDescription, categoryId = currentCategory?.takeIf { it.isNotEmpty() }, priority = currentPriority), onSuccess = onBack)
-                }, modifier = Modifier.fillMaxWidth()) { Text(if (busy) "Guardando…" else "Guardar") }
+                }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(if (busy) R.string.action_saving else R.string.action_save)) }
             }
         }
     }

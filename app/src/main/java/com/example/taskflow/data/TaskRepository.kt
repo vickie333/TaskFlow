@@ -41,6 +41,19 @@ class TaskRepository @Inject constructor(private val db: AppDatabase, private va
     }
     suspend fun removeTask(task: Task) = mutate(task) { it.copy(pendingDelete = true) }
     suspend fun editTask(task: Task) = mutate(task) { it.copy(description = task.description.trim().also { text -> require(text.isNotEmpty()) }, priority = task.priority, categoryId = task.categoryId, isCompleted = task.isCompleted) }
+    /** Undoes a delete: clears the tombstone with a newer timestamp so it also wins against the cloud copy. */
+    suspend fun restoreTask(task: Task) {
+        val uid = session.requireUid()
+        db.withTransaction {
+            val persisted = requireNotNull(dao.getTaskById(task.id))
+            require(task.userId == uid && persisted.userId == uid && persisted.pendingDelete)
+            val category = persisted.categoryId?.let { db.categoryDao().getCategoryById(it) }
+            val categoryId = persisted.categoryId.takeIf { category != null && !category.pendingDelete }
+            check(session.currentUid() == uid)
+            dao.editTask(persisted.copy(pendingDelete = false, categoryId = categoryId, updatedAt = nextTimestamp(persisted.updatedAt), isSynced = false))
+        }
+        scheduler.requestSync(uid)
+    }
     suspend fun toggleCompleted(task: Task) = mutate(task) { it.copy(isCompleted = !it.isCompleted) }
     suspend fun sync() { session.currentUid()?.let { synchronizer.sync(it) } }
     fun getAllTasks() = session.uid.flatMapLatest { uid -> if (uid.isNullOrBlank() || uid == "USER") flowOf(emptyList()) else dao.getAllTasks(uid) }
