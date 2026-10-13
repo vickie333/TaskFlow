@@ -5,8 +5,15 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
+    // A synced deletion marker may be purged once every device has had time to see it.
+    // Keep this window in sync with TOMBSTONE_TTL_MS in TaskSynchronizer.kt.
+    function expiredTombstone() {
+      return resource.data.pendingDelete == true
+        && resource.data.updatedAt < (request.time - duration.value(30, 'd')).toMillis();
+    }
+
     // Documents live under their owner's uid. Never allow collection-wide access.
-    // Deletions are tombstones so an offline device can learn about them later.
+    // Deletions are tombstones so an offline device can learn about them later; only old tombstones can be removed.
     match /users/{userId}/tasks/{taskId} {
       allow read: if owns(userId);
       allow create, update: if owns(userId)
@@ -20,7 +27,7 @@ service cloud.firestore {
           || request.resource.data.categoryId == null
           || (request.resource.data.categoryId is string
             && exists(/databases/$(database)/documents/users/$(userId)/categories/$(request.resource.data.categoryId))));
-      allow delete: if false;
+      allow delete: if owns(userId) && expiredTombstone();
     }
 
     match /users/{userId}/categories/{categoryId} {
@@ -29,7 +36,7 @@ service cloud.firestore {
         && request.resource.data.name is string
         && request.resource.data.updatedAt is int
         && request.resource.data.pendingDelete is bool;
-      allow delete: if false;
+      allow delete: if owns(userId) && expiredTombstone();
     }
   }
 }

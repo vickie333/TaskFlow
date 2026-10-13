@@ -19,7 +19,8 @@ class TaskSyncTest {
 
     private val dao = db.taskDao()
     private val remote = MemoryRemoteStore()
-    private val sync = TaskSynchronizer(db, remote, categories, session)
+    // Frozen near the epoch so the fixture timestamps (10, 20, 30...) are never old enough to be purged.
+    private val sync = TaskSynchronizer(db, remote, categories, session).apply { clock = { 100L } }
 
     @Test fun downloadsTasksIntoRoom() = runBlocking {
         remote.tasks["task"] = TaskDto(description = "Remota", updatedAt = 20)
@@ -185,7 +186,13 @@ class TaskSyncTest {
 internal class MemoryRemoteStore : TaskRemoteStore {
     val tasks = mutableMapOf<String, TaskDto>()
     var fail = false
+    var failPurge = false
+    val purged = mutableListOf<String>()
     var afterExchange: suspend () -> Unit = {}
+    override suspend fun purge(uid: String, id: String, updatedAt: Long) {
+        if (failPurge) throw java.io.IOException("PERMISSION_DENIED")
+        if (tasks[id]?.let { it.pendingDelete && it.updatedAt <= updatedAt } != false) { tasks.remove(id); purged += id }
+    }
     override suspend fun exchange(uid: String, task: Task): TaskDto {
         if (fail) throw java.io.IOException("Offline")
         val winner = chooseTaskVersion(task.toDto(), tasks[task.id])
@@ -202,6 +209,9 @@ internal class TestSession : AccountSession {
 internal class MemoryCategoryStore : com.example.taskflow.data.remote.CategoryRemoteStore {
     val values = mutableMapOf<String, com.example.taskflow.data.remote.CategoryDto>()
     var afterExchange: suspend () -> Unit = {}
+    override suspend fun purge(uid: String, id: String, updatedAt: Long) {
+        if (values[id]?.let { it.pendingDelete && it.updatedAt <= updatedAt } != false) values.remove(id)
+    }
     override suspend fun fetchAll(uid: String) = values.toMap()
     override suspend fun exchange(uid: String, category: Category): com.example.taskflow.data.remote.CategoryDto {
         val local = com.example.taskflow.data.remote.CategoryDto(category.name, category.updatedAt, category.pendingDelete)
