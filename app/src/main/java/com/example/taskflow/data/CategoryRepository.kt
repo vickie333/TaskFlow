@@ -6,6 +6,13 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
 
+const val MAX_CATEGORY_NAME_LENGTH = 100 // keep in sync with firestore.rules
+
+internal fun String.cleanCategoryName(): String = trim().also {
+    require(it.isNotEmpty()) { "El nombre no puede estar vacío" }
+    require(it.length <= MAX_CATEGORY_NAME_LENGTH) { "El nombre admite hasta $MAX_CATEGORY_NAME_LENGTH caracteres" }
+}
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class CategoryRepository @Inject constructor(private val db: AppDatabase, private val session: AccountSession, private val scheduler: SyncScheduler) {
     fun getAllCategories() = session.uid.flatMapLatest { uid -> if (uid.isNullOrBlank() || uid == "USER") flowOf(emptyList()) else db.categoryDao().getAllCategories(uid) }
@@ -13,7 +20,7 @@ class CategoryRepository @Inject constructor(private val db: AppDatabase, privat
         val uid = session.requireUid()
         db.withTransaction {
             check(session.currentUid() == uid)
-            db.categoryDao().insertCategory(Category(name = name.trim().also { require(it.isNotEmpty()) }, userId = uid))
+            db.categoryDao().insertCategory(Category(name = name.cleanCategoryName(), userId = uid))
         }
         scheduler.requestSync(uid)
     }
@@ -24,7 +31,7 @@ class CategoryRepository @Inject constructor(private val db: AppDatabase, privat
             require(existing.userId == uid && category.userId == uid && !existing.pendingDelete)
             if (delete) require(db.taskDao().activeCategoryTasks(category.id) == 0) { "La categoría tiene tareas activas" }
             check(session.currentUid() == uid)
-            db.categoryDao().editCategory(existing.copy(name = category.name.trim().also { require(it.isNotEmpty()) }, pendingDelete = delete, updatedAt = nextTimestamp(existing.updatedAt), isSynced = false))
+            db.categoryDao().editCategory(existing.copy(name = category.name.cleanCategoryName(), pendingDelete = delete, updatedAt = nextTimestamp(existing.updatedAt), isSynced = false))
         }
         scheduler.requestSync(uid)
     }

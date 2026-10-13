@@ -6,6 +6,13 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
 
+const val MAX_DESCRIPTION_LENGTH = 500 // keep in sync with firestore.rules
+
+internal fun String.cleanDescription(): String = trim().also {
+    require(it.isNotEmpty()) { "La descripción no puede estar vacía" }
+    require(it.length <= MAX_DESCRIPTION_LENGTH) { "La descripción admite hasta $MAX_DESCRIPTION_LENGTH caracteres" }
+}
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class TaskRepository @Inject constructor(private val db: AppDatabase, private val session: AccountSession, private val scheduler: SyncScheduler, private val synchronizer: TaskSynchronizer) {
     private val dao get() = db.taskDao()
@@ -14,7 +21,7 @@ class TaskRepository @Inject constructor(private val db: AppDatabase, private va
         db.withTransaction {
             validateCategory(categoryId, uid)
             check(session.currentUid() == uid)
-            dao.insertTask(Task(description = description.trim().also { require(it.isNotEmpty()) }, priority = priority, categoryId = categoryId, userId = uid))
+            dao.insertTask(Task(description = description.cleanDescription(), priority = priority, categoryId = categoryId, userId = uid))
         }
         scheduler.requestSync(uid)
     }
@@ -40,7 +47,7 @@ class TaskRepository @Inject constructor(private val db: AppDatabase, private va
         scheduler.requestSync(uid)
     }
     suspend fun removeTask(task: Task) = mutate(task) { it.copy(pendingDelete = true) }
-    suspend fun editTask(task: Task) = mutate(task) { it.copy(description = task.description.trim().also { text -> require(text.isNotEmpty()) }, priority = task.priority, categoryId = task.categoryId, isCompleted = task.isCompleted) }
+    suspend fun editTask(task: Task) = mutate(task) { it.copy(description = task.description.cleanDescription(), priority = task.priority, categoryId = task.categoryId, isCompleted = task.isCompleted) }
     /** Undoes a delete: clears the tombstone with a newer timestamp so it also wins against the cloud copy. */
     suspend fun restoreTask(task: Task) {
         val uid = session.requireUid()

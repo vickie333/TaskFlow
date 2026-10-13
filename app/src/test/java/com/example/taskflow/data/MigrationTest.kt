@@ -30,7 +30,7 @@ class MigrationTest {
         }).build())
         helper.writableDatabase
         helper.close()
-        val room = Room.databaseBuilder(context, AppDatabase::class.java, name).addMigrations(AppDatabase.MIGRATION_5_6).allowMainThreadQueries().build()
+        val room = Room.databaseBuilder(context, AppDatabase::class.java, name).addMigrations(AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7).allowMainThreadQueries().build()
         try {
             room.openHelper.writableDatabase // Room performs actual generated schema validation.
             val tasks = listOf("alice", "bob", "", "USER").flatMap { room.taskDao().getTasks(it) }
@@ -62,7 +62,7 @@ class MigrationTest {
         }).build())
         helper.writableDatabase
         helper.close()
-        val room = Room.databaseBuilder(context, AppDatabase::class.java, name).addMigrations(AppDatabase.MIGRATION_5_6).allowMainThreadQueries().build()
+        val room = Room.databaseBuilder(context, AppDatabase::class.java, name).addMigrations(AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7).allowMainThreadQueries().build()
         try {
             val db = room.openHelper.writableDatabase
             val done = requireNotNull(room.taskDao().getTaskById("done"))

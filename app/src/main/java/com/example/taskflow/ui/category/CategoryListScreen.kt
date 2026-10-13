@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.taskflow.data.MAX_CATEGORY_NAME_LENGTH
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +41,7 @@ fun CategoryScreen(viewModel: CategoryViewModel, onBack: () -> Unit) {
     var name by rememberSaveable(uid) { mutableStateOf("") }
     Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.menu_categories)) }, navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(R.string.action_back)) } }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedTextField(name, { name = it }, label = { Text(stringResource(R.string.new_category)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(name, { name = it.take(MAX_CATEGORY_NAME_LENGTH) }, label = { Text(stringResource(R.string.new_category)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
             Button(onClick = { viewModel.addCategory(name) { name = "" } }, enabled = name.isNotBlank() && !busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.add_category)) }
             msg?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             LazyColumn(Modifier.fillMaxWidth().weight(1f)) {

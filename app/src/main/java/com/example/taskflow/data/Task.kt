@@ -8,7 +8,7 @@ import java.util.UUID
 
 @Entity(tableName = "tasks",
     foreignKeys = [ForeignKey(entity = Category::class, parentColumns = ["id"], childColumns = ["categoryId"], onDelete = ForeignKey.RESTRICT)],
-    indices = [Index("categoryId")])
+    indices = [Index("categoryId"), Index("userId")])
 data class Task(
     @PrimaryKey
     val id: String = UUID.randomUUID().toString(),

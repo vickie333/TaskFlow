@@ -28,6 +28,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.taskflow.data.MAX_DESCRIPTION_LENGTH
 import com.example.taskflow.data.Priority
 import com.example.taskflow.ui.category.CategoryViewModel
 
@@ -53,7 +54,7 @@ fun TaskEditScreen(taskId: String, viewModel: TaskViewModel, viewModelCategory: 
     Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.edit_task)) }, navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(R.string.action_back)) } }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (task == null) Text(stringResource(R.string.task_not_found)) else {
-                OutlinedTextField(currentDescription, { description = it }, label = { Text(stringResource(R.string.description)) }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(currentDescription, { description = it.take(MAX_DESCRIPTION_LENGTH) }, label = { Text(stringResource(R.string.description)) }, modifier = Modifier.fillMaxWidth())
                 Box {
                     OutlinedButton(onClick = { categoryExpanded = true }) { Text(categories.find { it.id == currentCategory }?.name ?: stringResource(R.string.no_category)) }
                     DropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {

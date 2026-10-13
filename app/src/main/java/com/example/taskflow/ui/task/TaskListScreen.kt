@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.taskflow.data.Category
+import com.example.taskflow.data.MAX_DESCRIPTION_LENGTH
 import com.example.taskflow.data.Priority
 import com.example.taskflow.data.Task
 import com.example.taskflow.ui.auth.AuthViewModel
@@ -112,7 +113,7 @@ fun TaskListScreen(
             }
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(text, { text = it }, label = { Text(stringResource(R.string.new_task)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(text, { text = it.take(MAX_DESCRIPTION_LENGTH) }, label = { Text(stringResource(R.string.new_task)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Box(modifier = Modifier.weight(1f)) {
                             OutlinedButton(onClick = { showCategory = true }, modifier = Modifier.fillMaxWidth()) { Text(categories.find { it.id == categoryId }?.name ?: noCategory, maxLines = 1) }
