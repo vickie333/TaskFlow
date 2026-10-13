@@ -1,5 +1,14 @@
 package com.example.taskflow.ui.settings
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.res.stringResource
+import com.example.taskflow.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,38 +48,42 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
     val recovering by viewModel.recovering.collectAsStateWithLifecycle()
     var confirmRecovery by remember { mutableStateOf(false) }
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Ajustes") }, navigationIcon = { TextButton(onClick = onBack) { Text("Volver") } }) }) { padding ->
+    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.menu_settings)) }, navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(R.string.action_back)) } }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Apariencia", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.settings_appearance), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
             ThemeChoice.entries.forEach { choice ->
-                TextButton(onClick = { viewModel.setTheme(choice) }, modifier = Modifier.fillMaxWidth()) {
-                    Text(choice.label, modifier = Modifier.weight(1f))
-                    RadioButton(selected = theme == choice, onClick = { viewModel.setTheme(choice) })
+                // One selectable row (>= 48dp) so TalkBack reads "label, radio button, selected" as a single control.
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(selected = theme == choice, role = Role.RadioButton, onClick = { viewModel.setTheme(choice) }),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(stringResource(choice.labelRes), modifier = Modifier.weight(1f))
+                    RadioButton(selected = theme == choice, onClick = null)
                 }
             }
             HorizontalDivider()
-            Text("Sincronización", style = MaterialTheme.typography.titleMedium)
-            Text(when (status.phase) {
-                SyncPhase.IDLE -> "Sin actividad reciente"
-                SyncPhase.WAITING -> "Esperando conexión para sincronizar"
-                SyncPhase.RUNNING -> "Sincronizando…"
-                SyncPhase.SUCCESS -> "Sincronización completada"
-                SyncPhase.ERROR -> "Error de sincronización"
-            })
+            Text(stringResource(R.string.settings_sync), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+            Text(stringResource(when (status.phase) {
+                SyncPhase.IDLE -> R.string.sync_idle
+                SyncPhase.WAITING -> R.string.sync_waiting
+                SyncPhase.RUNNING -> R.string.sync_running
+                SyncPhase.SUCCESS -> R.string.sync_success
+                SyncPhase.ERROR -> R.string.sync_error
+            }))
             status.message?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            Button(onClick = viewModel::retrySync) { Text(if (status.phase == SyncPhase.ERROR) "Reintentar" else "Sincronizar ahora") }
+            Button(onClick = viewModel::retrySync) { Text(stringResource(if (status.phase == SyncPhase.ERROR) R.string.sync_retry else R.string.sync_now)) }
             HorizontalDivider()
-            Text("Recuperación", style = MaterialTheme.typography.titleMedium)
-            Text("Puedes recuperar tareas antiguas sin cuenta. Se añadirán a la cuenta actual.")
-            Button(enabled = !recovering, onClick = { confirmRecovery = true }) { Text(if (recovering) "Recuperando…" else "Recuperar tareas antiguas") }
+            Text(stringResource(R.string.settings_recovery), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+            Text(stringResource(R.string.recovery_hint))
+            Button(enabled = !recovering, onClick = { confirmRecovery = true }) { Text(stringResource(if (recovering) R.string.recovering else R.string.recover_legacy)) }
             message?.let { Text(it, color = if (it.startsWith("Se recuperaron") || it.startsWith("No hay")) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error) }
         }
     }
     if (confirmRecovery) AlertDialog(
         onDismissRequest = { confirmRecovery = false },
-        title = { Text("Recuperar tareas antiguas") },
-        text = { Text("Las tareas antiguas de este dispositivo se añadirán a tu cuenta. ¿Continuar?") },
-        confirmButton = { TextButton(onClick = { confirmRecovery = false; viewModel.recoverLegacy() }) { Text("Recuperar") } },
-        dismissButton = { TextButton(onClick = { confirmRecovery = false }) { Text("Cancelar") } }
+        title = { Text(stringResource(R.string.recover_legacy)) },
+        text = { Text(stringResource(R.string.recover_confirm)) },
+        confirmButton = { TextButton(onClick = { confirmRecovery = false; viewModel.recoverLegacy() }) { Text(stringResource(R.string.recover)) } },
+        dismissButton = { TextButton(onClick = { confirmRecovery = false }) { Text(stringResource(R.string.action_cancel)) } }
     )
 }

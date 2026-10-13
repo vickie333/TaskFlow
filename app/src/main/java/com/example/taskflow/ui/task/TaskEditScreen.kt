@@ -1,5 +1,7 @@
 package com.example.taskflow.ui.task
 
+import androidx.compose.ui.res.stringResource
+import com.example.taskflow.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,19 +50,19 @@ fun TaskEditScreen(taskId: String, viewModel: TaskViewModel, viewModelCategory: 
     val currentCategory = categoryId ?: task?.categoryId?.takeIf { id -> categories.any { it.id == id } }
     val currentPriority = priority ?: task?.priority ?: Priority.MEDIA
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Editar tarea") }, navigationIcon = { TextButton(onClick = onBack) { Text("Volver") } }) }) { padding ->
+    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.edit_task)) }, navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(R.string.action_back)) } }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (task == null) Text("No se encontró la tarea") else {
-                OutlinedTextField(currentDescription, { description = it }, label = { Text("Descripción") }, modifier = Modifier.fillMaxWidth())
+            if (task == null) Text(stringResource(R.string.task_not_found)) else {
+                OutlinedTextField(currentDescription, { description = it }, label = { Text(stringResource(R.string.description)) }, modifier = Modifier.fillMaxWidth())
                 Box {
-                    OutlinedButton(onClick = { categoryExpanded = true }) { Text(categories.find { it.id == currentCategory }?.name ?: "Sin categoría") }
+                    OutlinedButton(onClick = { categoryExpanded = true }) { Text(categories.find { it.id == currentCategory }?.name ?: stringResource(R.string.no_category)) }
                     DropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {
-                        DropdownMenuItem(text = { Text("Sin categoría") }, onClick = { categoryId = ""; categoryExpanded = false })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.no_category)) }, onClick = { categoryId = ""; categoryExpanded = false })
                         categories.forEach { item -> DropdownMenuItem(text = { Text(item.name) }, onClick = { categoryId = item.id; categoryExpanded = false }) }
                     }
                 }
                 Box {
-                    OutlinedButton(onClick = { priorityExpanded = true }) { Text("Prioridad: ${currentPriority.name}") }
+                    OutlinedButton(onClick = { priorityExpanded = true }) { Text(stringResource(R.string.priority_value, currentPriority.name)) }
                     DropdownMenu(expanded = priorityExpanded, onDismissRequest = { priorityExpanded = false }) {
                         Priority.entries.forEach { item -> DropdownMenuItem(text = { Text(item.name) }, onClick = { priority = item; priorityExpanded = false }) }
                     }
@@ -68,7 +70,7 @@ fun TaskEditScreen(taskId: String, viewModel: TaskViewModel, viewModelCategory: 
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 Button(enabled = currentDescription.isNotBlank() && !busy, onClick = {
                     viewModel.editTask(task.copy(description = currentDescription, categoryId = currentCategory?.takeIf { it.isNotEmpty() }, priority = currentPriority), onSuccess = onBack)
-                }, modifier = Modifier.fillMaxWidth()) { Text(if (busy) "Guardando…" else "Guardar") }
+                }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(if (busy) R.string.action_saving else R.string.action_save)) }
             }
         }
     }

@@ -1,5 +1,7 @@
 package com.example.taskflow.ui.auth
 
+import androidx.compose.ui.res.stringResource
+import com.example.taskflow.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,12 +34,12 @@ fun LoginScreen(viewModel: AuthViewModel) {
     Column(Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp), verticalArrangement = Arrangement.Center) {
         Text("TaskFlow", style = MaterialTheme.typography.headlineLarge)
         Spacer(Modifier.height(24.dp))
-        OutlinedTextField(email, { email = it }, label = { Text("Correo electrónico") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(email, { email = it }, label = { Text(stringResource(R.string.login_email)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(8.dp))
-        OutlinedTextField(password, { password = it }, label = { Text("Contraseña") }, visualTransformation = PasswordVisualTransformation(), singleLine = true, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(password, { password = it }, label = { Text(stringResource(R.string.login_password)) }, visualTransformation = PasswordVisualTransformation(), singleLine = true, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(16.dp))
-        Button(onClick = { viewModel.login(email, password) }, enabled = email.isNotBlank() && password.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("Entrar") }
-        OutlinedButton(onClick = { viewModel.register(email, password) }, enabled = email.isNotBlank() && password.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("Crear cuenta") }
+        Button(onClick = { viewModel.login(email, password) }, enabled = email.isNotBlank() && password.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.login_sign_in)) }
+        OutlinedButton(onClick = { viewModel.register(email, password) }, enabled = email.isNotBlank() && password.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.login_register)) }
         message?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     }
 }

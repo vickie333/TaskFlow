@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -37,9 +38,13 @@ class TaskViewModel @Inject constructor(
     private val _busy = MutableStateFlow(false)
     val busy: StateFlow<Boolean> = _busy
 
+    // False until Room delivers its first real list, so the UI can tell "loading" from "no tasks".
+    private val _loading = MutableStateFlow(true)
+    val loading: StateFlow<Boolean> = _loading
+
     val allTasks: StateFlow<List<Task>> = session.uid.flatMapLatest { uid ->
-        if (uid.isNullOrBlank()) flowOf(emptyList())
-        else repository.getAllTasks().onStart { emit(emptyList()) }
+        if (uid.isNullOrBlank()) flowOf(emptyList<Task>()).onStart { _loading.value = false }
+        else repository.getAllTasks().onEach { _loading.value = false }.onStart { _loading.value = true; emit(emptyList()) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val tasks: StateFlow<List<Task>> = combine(session.uid, allTasks, search, filter) { uid, all, query, category ->
         all.filter { it.userId == uid && it.description.contains(query, ignoreCase = true) && (category == null || it.categoryId == category) }
@@ -85,7 +90,8 @@ class TaskViewModel @Inject constructor(
 
     fun addTask(description: String, priority: Priority, categoryId: String?, onSuccess: () -> Unit = {}) =
         perform({ repository.addTask(description, priority, categoryId) }, onSuccess)
-    fun removeTask(task: Task) = perform({ repository.removeTask(task) })
+    fun removeTask(task: Task, onSuccess: () -> Unit = {}) = perform({ repository.removeTask(task) }, onSuccess)
     fun editTask(task: Task, onSuccess: () -> Unit = {}) = perform({ repository.editTask(task) }, onSuccess)
     fun toggleCompleted(task: Task) = perform({ repository.toggleCompleted(task) })
+    fun restoreTask(task: Task) = perform({ repository.restoreTask(task) })
 }

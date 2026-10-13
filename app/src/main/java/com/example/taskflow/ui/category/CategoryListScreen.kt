@@ -1,5 +1,7 @@
 package com.example.taskflow.ui.category
 
+import androidx.compose.ui.res.stringResource
+import com.example.taskflow.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,16 +38,16 @@ fun CategoryScreen(viewModel: CategoryViewModel, onBack: () -> Unit) {
     val msg by viewModel.msg.collectAsStateWithLifecycle()
     val busy by viewModel.busy.collectAsStateWithLifecycle()
     var name by rememberSaveable(uid) { mutableStateOf("") }
-    Scaffold(topBar = { TopAppBar(title = { Text("Categorías") }, navigationIcon = { TextButton(onClick = onBack) { Text("Volver") } }) }) { padding ->
+    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.menu_categories)) }, navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(R.string.action_back)) } }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedTextField(name, { name = it }, label = { Text("Nueva categoría") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            Button(onClick = { viewModel.addCategory(name) { name = "" } }, enabled = name.isNotBlank() && !busy, modifier = Modifier.fillMaxWidth()) { Text("Añadir categoría") }
+            OutlinedTextField(name, { name = it }, label = { Text(stringResource(R.string.new_category)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            Button(onClick = { viewModel.addCategory(name) { name = "" } }, enabled = name.isNotBlank() && !busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.add_category)) }
             msg?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             LazyColumn(Modifier.fillMaxWidth().weight(1f)) {
                 items(categories, key = { it.id }) { category ->
                     Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text(category.name, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                        TextButton(onClick = { viewModel.removeCategory(category) }) { Text("Eliminar") }
+                        TextButton(onClick = { viewModel.removeCategory(category) }) { Text(stringResource(R.string.action_delete)) }
                     }
                 }
             }

@@ -1,3 +1,68 @@
 <resources>
     <string name="app_name">Task Flow</string>
+
+    <!-- Acciones comunes -->
+    <string name="action_back">Volver</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_undo">Deshacer</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_saving">Guardando…</string>
+    <string name="no_category">Sin categoría</string>
+    <string name="priority_value">Prioridad: %1$s</string>
+
+    <!-- Login -->
+    <string name="login_email">Correo electrónico</string>
+    <string name="login_password">Contraseña</string>
+    <string name="login_sign_in">Entrar</string>
+    <string name="login_register">Crear cuenta</string>
+
+    <!-- Lista de tareas -->
+    <string name="menu">Menú</string>
+    <string name="menu_categories">Categorías</string>
+    <string name="menu_settings">Ajustes</string>
+    <string name="menu_sign_out">Salir</string>
+    <string name="search">Buscar</string>
+    <string name="filter_all">Todas</string>
+    <string name="new_task">Nueva tarea</string>
+    <string name="add_task">Agregar tarea</string>
+    <string name="empty_tasks">No hay tareas para mostrar</string>
+    <string name="loading_tasks">Cargando tareas…</string>
+    <string name="task_deleted">Tarea eliminada</string>
+    <string name="task_meta">%1$s · %2$s</string>
+    <string name="cd_complete_task">Completar tarea: %1$s</string>
+    <string name="cd_delete_task">Eliminar tarea: %1$s</string>
+
+    <!-- Detalle / edición -->
+    <string name="detail_title">Detalle de tarea</string>
+    <string name="edit_task">Editar tarea</string>
+    <string name="task_not_found">No se encontró la tarea</string>
+    <string name="category_value">Categoría: %1$s</string>
+    <string name="status_completed">Completada</string>
+    <string name="status_pending">Pendiente</string>
+    <string name="description">Descripción</string>
+
+    <!-- Categorías -->
+    <string name="new_category">Nueva categoría</string>
+    <string name="add_category">Añadir categoría</string>
+
+    <!-- Ajustes -->
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="settings_appearance">Apariencia</string>
+    <string name="settings_sync">Sincronización</string>
+    <string name="sync_idle">Sin actividad reciente</string>
+    <string name="sync_waiting">Esperando conexión para sincronizar</string>
+    <string name="sync_running">Sincronizando…</string>
+    <string name="sync_success">Sincronización completada</string>
+    <string name="sync_error">Error de sincronización</string>
+    <string name="sync_retry">Reintentar</string>
+    <string name="sync_now">Sincronizar ahora</string>
+    <string name="settings_recovery">Recuperación</string>
+    <string name="recovery_hint">Puedes recuperar tareas antiguas sin cuenta. Se añadirán a la cuenta actual.</string>
+    <string name="recovering">Recuperando…</string>
+    <string name="recover_legacy">Recuperar tareas antiguas</string>
+    <string name="recover_confirm">Las tareas antiguas de este dispositivo se añadirán a tu cuenta. ¿Continuar?</string>
+    <string name="recover">Recuperar</string>
 </resources>

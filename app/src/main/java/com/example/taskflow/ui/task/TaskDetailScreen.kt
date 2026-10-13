@@ -1,5 +1,7 @@
 package com.example.taskflow.ui.task
 
+import androidx.compose.ui.res.stringResource
+import com.example.taskflow.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,14 +28,14 @@ fun TaskDetailScreen(taskId: String, viewModel: TaskViewModel, viewModelCategory
     val allCategories by viewModelCategory.categories.collectAsStateWithLifecycle()
     val task = tasks.find { it.id == taskId && it.userId == uid }
     val categories = allCategories.filter { it.userId == uid }
-    Scaffold(topBar = { TopAppBar(title = { Text("Detalle de tarea") }, navigationIcon = { TextButton(onClick = onBack) { Text("Volver") } }) }) { padding ->
+    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.detail_title)) }, navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(R.string.action_back)) } }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (task == null) Text("No se encontró la tarea") else {
+            if (task == null) Text(stringResource(R.string.task_not_found)) else {
                 Text(task.description, style = MaterialTheme.typography.headlineSmall)
-                Text("Prioridad: ${task.priority.name}")
-                Text("Categoría: ${categories.find { it.id == task.categoryId }?.name ?: "Sin categoría"}")
-                Text(if (task.isCompleted) "Completada" else "Pendiente")
-                Button(onClick = onEdit) { Text("Editar tarea") }
+                Text(stringResource(R.string.priority_value, task.priority.name))
+                Text(stringResource(R.string.category_value, categories.find { it.id == task.categoryId }?.name ?: stringResource(R.string.no_category)))
+                Text(stringResource(if (task.isCompleted) R.string.status_completed else R.string.status_pending))
+                Button(onClick = onEdit) { Text(stringResource(R.string.edit_task)) }
             }
         }
     }
