@@ -50,8 +50,15 @@ interface TaskDao {
     @Query("SELECT COUNT(*) FROM tasks WHERE categoryId = :id AND pendingDelete = 0")
     suspend fun activeCategoryTasks(id: String): Int
 
+    @Query("SELECT COUNT(*) FROM tasks WHERE categoryId = :id")
+    suspend fun tasksReferencing(id: String): Int
+
     @Insert
     suspend fun insertTask(task: Task)
+
+    /** Hard-deletes a tombstone only if it is still exactly the synced revision that was judged expired. */
+    @Query("DELETE FROM tasks WHERE id = :id AND userId = :uid AND pendingDelete = 1 AND isSynced = 1 AND updatedAt = :updatedAt")
+    suspend fun purgeTombstone(uid: String, id: String, updatedAt: Long): Int
 
     @Delete
     suspend fun deleteTask(task: Task)

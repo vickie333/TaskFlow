@@ -12,5 +12,7 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE userId = :uid")
     suspend fun getCategories(uid: String): List<Category>
     @Insert suspend fun insertCategory(category: Category)
+    @Query("DELETE FROM categories WHERE id = :id AND userId = :uid AND pendingDelete = 1 AND isSynced = 1 AND updatedAt = :updatedAt AND NOT EXISTS (SELECT 1 FROM tasks WHERE categoryId = :id)")
+    suspend fun purgeTombstone(uid: String, id: String, updatedAt: Long): Int
     @Update suspend fun editCategory(category: Category)
 }

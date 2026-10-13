@@ -10,6 +10,8 @@ import javax.inject.Inject
 interface TaskRemoteStore {
     suspend fun exchange(uid: String, task: Task): TaskDto
     suspend fun fetchAll(uid: String): Map<String, TaskDto>
+    /** Deletes the cloud document only if it is still the tombstone written at [updatedAt] (or already gone). */
+    suspend fun purge(uid: String, id: String, updatedAt: Long)
 }
 
 class FirestoreTaskRemoteStore @Inject constructor(
@@ -31,6 +33,17 @@ class FirestoreTaskRemoteStore @Inject constructor(
                 transaction.set(document, mapOf("description" to winner.description, "isCompleted" to winner.isCompleted, "priority" to winner.priority, "updatedAt" to winner.updatedAt, "categoryId" to winner.categoryId, "pendingDelete" to winner.pendingDelete))
             }
             winner
+        }.await()
+    }
+
+    override suspend fun purge(uid: String, id: String, updatedAt: Long) {
+        val document = tasks(uid).document(id)
+        firestore.runTransaction { transaction ->
+            val snapshot = transaction.get(document)
+            if (snapshot.exists()) {
+                val remote = snapshot.readTask()
+                if (remote.pendingDelete && remote.updatedAt <= updatedAt) transaction.delete(document)
+            }
         }.await()
     }
 

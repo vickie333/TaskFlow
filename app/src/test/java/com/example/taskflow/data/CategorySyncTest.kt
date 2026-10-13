@@ -11,7 +11,7 @@ class CategorySyncTest {
     private val db = androidx.room.Room.inMemoryDatabaseBuilder(org.robolectric.RuntimeEnvironment.getApplication(), AppDatabase::class.java).allowMainThreadQueries().build()
     private val session = TestSession()
     private val categories = MemoryCategoryStore()
-    private val sync = TaskSynchronizer(db, MemoryRemoteStore(), categories, session)
+    private val sync = TaskSynchronizer(db, MemoryRemoteStore(), categories, session).apply { clock = { 100L } }
     private val dao = db.categoryDao()
     @org.junit.After fun close() { db.close() }
 
